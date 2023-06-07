@@ -43,7 +43,7 @@ public class Bot extends Player{
             {-10, 0, 5, 10, 10, 5, 0, -10},
             {-10, 5, 5, 10, 10, 5, 5, -10},
             {-10, 0, 10, 10, 10, 10, 0, -10},
-            {-10, 10, 10, 10, 10, 10, 10, -10},
+            {-10, 10, 10, 8, 8, 10, 10, -10},
             {-10, 5, 0, 0, 0, 0, 5, -10},
             {-20, -10, -10, -10, -10, -10, -10, -20}
     };
@@ -88,34 +88,56 @@ public class Bot extends Player{
             {-50, -30, -30, -30, -30, -30, -30, -50}
     };
     private static final int NEGATIVE_INFINITY = -Integer.MAX_VALUE;
-    private final int depth;
+    private final int thinkingTime;
 
-    public Bot(Game game, int depth) {
+    public Bot(Game game, int thinkingTime) {
         super(game);
-        this.depth = depth;
+        this.thinkingTime = thinkingTime;
     }
 
     public void move() {
         long startTime = System.nanoTime();
-        int bestEval = NEGATIVE_INFINITY;
         int eval;
+        int bestEval = NEGATIVE_INFINITY;
         ArrayList<Move> moves = game.findAllLegalMoves();
         Collections.shuffle(moves);
         orderMoves(moves);
-        Move bestMove = moves.get(0);
+        Move depthBestMove = moves.get(0);
+        Move bestMove = depthBestMove;
 
-        for (Move move : moves) {
-            game.makeMove(move);
-            eval = -evalMove(NEGATIVE_INFINITY, -bestEval, depth - 1);
-            game.undoMove();
-            if (eval > bestEval) {
-                bestEval = eval;
-                bestMove = move;
+        int depth = 1;
+        boolean thinking = true;
+
+        while(thinking) {
+            for (Move move : moves) {
+                game.makeMove(move);
+                eval = -evalMove(NEGATIVE_INFINITY, -bestEval, depth - 1);
+                game.undoMove();
+                move.setScore(eval);
+                if (eval > bestEval) {
+                    bestEval = eval;
+                    depthBestMove = move;
+                }
+                if ((System.nanoTime() - startTime)/1000000 > thinkingTime) {
+                    thinking = false;
+                    break;
+                }
+                if (!(eval != NEGATIVE_INFINITY && eval != Integer.MAX_VALUE)) {
+                    bestMove = depthBestMove;
+                    thinking = false;
+                }
+            }
+            if (thinking) {
+                bestMove = depthBestMove;
+                moves.sort(new SortByScore());
+                depth ++;
+                bestEval = NEGATIVE_INFINITY;
             }
         }
 
-        System.out.print((System.nanoTime() - startTime)/1000000);
-        System.out.println("ms");
+
+        System.out.print("depth = ");
+        System.out.println(depth - 1);
         System.out.print("Evaluation = ");
         System.out.println(bestEval);
 
@@ -132,7 +154,7 @@ public class Bot extends Player{
         int status = game.isGameOver(moves.size());
         if (status != game.CONTINUING) {
             if (status == game.CHECKMATE) {
-                return -100000 - depth;
+                return NEGATIVE_INFINITY;
             }
             return 0;
         }
