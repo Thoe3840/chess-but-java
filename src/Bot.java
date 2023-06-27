@@ -22,8 +22,8 @@ public class Bot extends Player{
         {50, 50, 50, 50, 50, 50, 50, 50},
         {10, 10, 20, 30, 30, 20, 10, 10},
         {5, 5, 10, 25, 25, 10, 5, 5},
-        {0, 0, 5, 20, 20, 0, 0, 0},
-        {5, -10, 0, 0, 0, -10, -5, 5},
+        {3, 0, 5, 20, 20, 0, 0, 3},
+        {5, -10, 0, 0, 0, -10, 0, 5},
         {5, 10, 10, -20, -20, 10, 10, 5},
         {0, 0, 0, 0, 0, 0, 0, 0}
     };
@@ -34,15 +34,15 @@ public class Bot extends Player{
             {-30, 5, 15, 20, 20, 15, 5, -30},
             {-30, 0, 15, 20, 20, 15, 0, -30},
             {-30, 5, 10, 15, 15, 10, 5, -30},
-            {-40, -20, 0, 5, 5, 0, -20, -40},
-            {-50, -40, -30, -30, -30, -30, -40, -50}
+            {-30, -20, 0, 5, 5, 0, -20, -30},
+            {-40, -30, -20, -20, -20, -20, -30, -40}
     };
     private static final int[][] bishopTable = {
             {-20, -10, -10, -10, -10, -10, -10, -20},
             {-10, 0, 0, 0, 0, 0, 0, -10},
             {-10, 0, 5, 10, 10, 5, 0, -10},
             {-10, 5, 5, 10, 10, 5, 5, -10},
-            {-10, 0, 10, 10, 10, 10, 0, -10},
+            {0, 0, 10, 10, 10, 10, 0, 0},
             {-10, 10, 10, 8, 8, 10, 10, -10},
             {-10, 5, 0, 0, 0, 0, 5, -10},
             {-20, -10, -10, -10, -10, -10, -10, -20}
@@ -63,8 +63,8 @@ public class Bot extends Player{
             {-10, 0, 5, 5, 5, 5, 0, -10},
             {-5, 0, 5, 5, 5, 5, 0, -5},
             {0, 0, 5, 5, 5, 5, 0, -5},
-            {-10, 5, 5, 5, 5, 5, 0, -10},
-            {-10, 0, 5, 0, 0, 0, 0, -10},
+            {-10, 5, 5, 5, 5, 5, 2, -10},
+            {-10, 0, 5, 2, 2, 0, 0, -10},
             {-20, -10, -10, -5, -5, -10, -10, -20}
     };
     private static final int[][] earlyKingTable = {
@@ -89,6 +89,7 @@ public class Bot extends Player{
     };
     private static final int NEGATIVE_INFINITY = -Integer.MAX_VALUE;
     private final int thinkingTime;
+    private long startTime;
 
     public Bot(Game game, int thinkingTime) {
         super(game);
@@ -96,9 +97,10 @@ public class Bot extends Player{
     }
 
     public void move() {
-        long startTime = System.nanoTime();
+        startTime = System.nanoTime();
         int eval;
         int bestEval = NEGATIVE_INFINITY;
+        int depthBestEval = NEGATIVE_INFINITY;
         ArrayList<Move> moves = game.findAllLegalMoves();
         Collections.shuffle(moves);
         orderMoves(moves);
@@ -111,33 +113,39 @@ public class Bot extends Player{
         while(thinking) {
             for (Move move : moves) {
                 game.makeMove(move);
-                eval = -evalMove(NEGATIVE_INFINITY, -bestEval, depth - 1);
+                eval = -evalMove(NEGATIVE_INFINITY, -depthBestEval, depth - 1);
                 game.undoMove();
                 move.setScore(eval);
-                if (eval > bestEval) {
-                    bestEval = eval;
+                if (eval > depthBestEval) {
+                    depthBestEval = eval;
                     depthBestMove = move;
                 }
                 if ((System.nanoTime() - startTime)/1000000 > thinkingTime) {
                     thinking = false;
                     break;
                 }
-                if (!(eval != NEGATIVE_INFINITY && eval != Integer.MAX_VALUE)) {
+                if (eval == Integer.MAX_VALUE) {
+                    bestEval = depthBestEval;
                     bestMove = depthBestMove;
                     thinking = false;
+                    break;
                 }
             }
             if (thinking) {
+                bestEval = depthBestEval;
                 bestMove = depthBestMove;
                 moves.sort(new SortByScore());
                 depth ++;
-                bestEval = NEGATIVE_INFINITY;
+                depthBestEval = NEGATIVE_INFINITY;
             }
         }
 
 
-        System.out.print("depth = ");
+        System.out.print("Depth = ");
         System.out.println(depth - 1);
+        System.out.print("Time = ");
+        System.out.print((System.nanoTime() - startTime)/1000000);
+        System.out.println("ms");
         System.out.print("Evaluation = ");
         System.out.println(bestEval);
 
@@ -146,6 +154,10 @@ public class Bot extends Player{
     }
 
     private int evalMove(int alpha, int beta, int depth) {
+        if ((System.nanoTime() - startTime)/1000000 > thinkingTime) {
+            return NEGATIVE_INFINITY;
+        }
+
         if (depth == 0) {
             return completeCaptures(alpha, beta);
         }
