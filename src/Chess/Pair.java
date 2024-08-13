@@ -1,3 +1,5 @@
+package Chess;
+
 import java.util.Objects;
 
 public class Pair {
@@ -49,7 +51,7 @@ public class Pair {
 
     @Override
     public String toString() {
-        return "Pair{" +
+        return "Chess.Pair{" +
                 "x=" + x +
                 ", y=" + y +
                 '}';

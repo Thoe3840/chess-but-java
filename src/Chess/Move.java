@@ -1,3 +1,5 @@
+package Chess;
+
 import java.util.Objects;
 
 public class Move {
@@ -60,5 +62,21 @@ public class Move {
     @Override
     public int hashCode() {
         return Objects.hash(startX, startY, endX, endY, promotion);
+    }
+
+    @Override
+    public String toString() {
+        if (promotion == '.') {
+            return (char) (startX + 97) +
+                    String.valueOf(8 - startY) +
+                    (char) (endX + 97) +
+                    String.valueOf(8 - endY);
+        }
+        return (char) (startX + 97) +
+                String.valueOf(8 - startY) +
+                (char) (endX + 97) +
+                String.valueOf(8 - endY) +
+                promotion;
+
     }
 }

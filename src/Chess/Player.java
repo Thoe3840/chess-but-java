@@ -1,3 +1,5 @@
+package Chess;
+
 public abstract class Player {
 
     protected final Game game;
@@ -7,4 +9,7 @@ public abstract class Player {
     }
 
     public abstract void move();
+
+    public void setMoveTime(int moveTime) {
+    }
 }

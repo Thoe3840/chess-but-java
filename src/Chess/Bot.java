@@ -1,3 +1,5 @@
+package Chess;
+
 import java.util.*;
 
 public class Bot extends Player{
@@ -88,12 +90,16 @@ public class Bot extends Player{
             {-50, -30, -30, -30, -30, -30, -30, -50}
     };
     private static final int NEGATIVE_INFINITY = -Integer.MAX_VALUE;
-    private final int thinkingTime;
+    private int thinkingTime;
     private long startTime;
 
     public Bot(Game game, int thinkingTime) {
         super(game);
         this.thinkingTime = thinkingTime;
+    }
+
+    public void setMoveTime(int moveTime) {
+        thinkingTime = moveTime;
     }
 
     public void move() {
@@ -120,7 +126,7 @@ public class Bot extends Player{
                     depthBestEval = eval;
                     depthBestMove = move;
                 }
-                if ((System.nanoTime() - startTime)/1000000 > thinkingTime) {
+                if ((System.nanoTime() - startTime)/1000000 >= thinkingTime) {
                     thinking = false;
                     break;
                 }
@@ -140,21 +146,24 @@ public class Bot extends Player{
             }
         }
 
-
-        System.out.print("Depth = ");
+        /*
+        System.out.print("info depth = ");
         System.out.println(depth - 1);
-        System.out.print("Time = ");
+        System.out.print("info time = ");
         System.out.print((System.nanoTime() - startTime)/1000000);
         System.out.println("ms");
-        System.out.print("Evaluation = ");
+        System.out.print("info evaluation = ");
         System.out.println(bestEval);
+        //game.updatePGN(bestMove);
+        */
 
-        game.updatePGN(bestMove);
+        // print move in uci
+        System.out.println("bestmove " + bestMove);
         game.makeMove(bestMove);
     }
 
     private int evalMove(int alpha, int beta, int depth) {
-        if ((System.nanoTime() - startTime)/1000000 > thinkingTime) {
+        if ((System.nanoTime() - startTime)/1000000 >= thinkingTime) {
             return NEGATIVE_INFINITY;
         }
 

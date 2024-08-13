@@ -1,3 +1,5 @@
+package Chess;
+
 import java.util.Comparator;
 
 public class SortByScore implements Comparator<Move> {

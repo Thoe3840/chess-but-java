@@ -1,3 +1,5 @@
+package Chess;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Stack;
@@ -237,7 +239,7 @@ public class Game {
                 targetX = x;
                 targetY = y + (colour ? -1 : 1);
                 if (board[targetX][targetY] == '.') {
-                    // if promoting
+                        // if promoting
                     if (targetY == (colour ? 0 : 7)) {
                         moves.add(new Move(x, y, targetX, targetY, (colour ? 'N' : 'n')));
                         moves.add(new Move(x, y, targetX, targetY, (colour ? 'B' : 'b')));
@@ -485,10 +487,10 @@ public class Game {
                 System.out.print(player ? "Black " : "White ");
                 System.out.println("wins by checkmate.");
             }
-            case STALEMATE -> System.out.println("Game drawn by stalemate.");
-            case REPETITION -> System.out.println("Game drawn by three move repetition.");
-            case FIFTY_MOVES -> System.out.println("Game drawn by fifty move rule.");
-            case INSUFFICIENT -> System.out.println("Game drawn by insufficient material.");
+            case STALEMATE -> System.out.println("Chess.Game drawn by stalemate.");
+            case REPETITION -> System.out.println("Chess.Game drawn by three move repetition.");
+            case FIFTY_MOVES -> System.out.println("Chess.Game drawn by fifty move rule.");
+            case INSUFFICIENT -> System.out.println("Chess.Game drawn by insufficient material.");
             default -> System.out.println("Game over.");
         }
         active = false;
